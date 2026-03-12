@@ -6,6 +6,10 @@ import { Register } from './pages/Register'
 import { Home } from './pages/Home'
 
 const router = createBrowserRouter([
+   {
+    path: '',
+    element: <Login />
+  },
   {
     path: '/',
     element: <Login />

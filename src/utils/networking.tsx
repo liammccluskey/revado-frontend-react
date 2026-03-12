@@ -17,3 +17,7 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+export const getErrorMessage = (error: any) => {
+    return error.response ? error.response.data.message : error.message
+}
+

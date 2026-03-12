@@ -1,6 +1,6 @@
 import {createContext, useContext, useState} from 'react'
 
-import { api } from '../utils/networking';
+import { api, getErrorMessage } from '../utils/networking';
 
 export interface LoginRequest {
   email: string;
@@ -77,27 +77,28 @@ export const AuthProvider = (props: any) => {
     
     const login = async (loginRequest: LoginRequest) => {
         try {
-            const res = await api.post('/auth', loginRequest)
+            const res = await api.post('/auth/login', loginRequest)
             setToken(res.data.token)
             await fetchCurrentUser()
-        } catch (error) {
-            throw error
+        } catch (error: any) {
+            throw new Error(getErrorMessage(error))
         }
     }
     
     const registerAndLogin = async (registerRequest: RegisterRequest) => {
         try {
-            const res = await api.post('/auth', registerRequest)
+            const res = await api.post('/auth/register', registerRequest)
             const {email, password} = registerRequest
             const loginRequest = {email, password}
             await login(loginRequest)
-        } catch (error) {
-            throw error
+        } catch (error: any) {
+            throw new Error(getErrorMessage(error))
         }
     }
     
     const logout = () => {
         setToken(null)
+        setCurrentUser(null)
         window.location.href = "/login"
     }
 
