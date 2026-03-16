@@ -5,7 +5,7 @@ import { BodyContainer } from '../components/BodyContainer'
 import { PageContainer } from '../components/PageContainer'
 import { Navbar } from '../components/Navbar'
 
-export const Home = (props: any) => {
+export const Home = () => {
 
     return (
         <PageContainer>

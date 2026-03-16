@@ -5,9 +5,11 @@ import { BodyContainer } from '../components/BodyContainer'
 import { PageContainer } from '../components/PageContainer'
 import { useAuthContext } from '../providers/AuthProvider'
 import { Navbar } from '../components/Navbar'
+import { useNavigate } from 'react-router-dom'
 
 export const Login = () => {
     const {login} = useAuthContext()
+    const navigate = useNavigate()
 
     const [loginError, setLoginError] = useState<string>('')
     const [email, setEmail] = useState<string>('')
@@ -21,6 +23,7 @@ export const Login = () => {
         event.preventDefault()
         try {
             await login({email, password})
+            navigate('/home')
         } catch (error: any) {
             setLoginError(error.message)
         }
