@@ -1,4 +1,4 @@
-import {createContext, useContext, useState} from 'react'
+import {createContext, useContext, useEffect, useState} from 'react'
 
 import { api, getErrorMessage } from '../utils/networking';
 
@@ -25,6 +25,7 @@ export interface User {
 
 interface ContextType {
     currentUser: User | null;
+    loadingUser: boolean;
     login: (loginRequest: LoginRequest) => Promise<void>;
     registerAndLogin: (registerRequest: RegisterRequest) => Promise<void>;
     logout: () => void;
@@ -32,6 +33,7 @@ interface ContextType {
 
 const AuthContext = createContext<ContextType>({
     currentUser: null,
+    loadingUser: true,
     login: async () => {},
     registerAndLogin: async () => {},
     logout: () => {}
@@ -45,6 +47,10 @@ export const AuthProvider = (props: any) => {
     const [currentUser, setCurrentUser] = useState<User | null>(null)
     const [loadingUser, setLoadingUser] = useState<boolean>(true)
 
+    useEffect(() => {
+        fetchCurrentUser()
+    }, [])
+
     // Utils
 
     const setToken = (token: string | null) => {
@@ -56,20 +62,26 @@ export const AuthProvider = (props: any) => {
     }
 
     const fetchCurrentUser = async () => {
-        if (localStorage.getItem('jwt')) {
-            try {
-                const res = await api.get('/users/self')
-                setCurrentUser(res.data)
-            } catch (error) {
-                console.log('Error: occured while fetching current user')
-                console.log(error)
-                throw error
-            }
-        } else {
-            const error = new Error('Error: cannot fetch current user without jwt token')
-            console.log(error.message)
-            throw error
+        setLoadingUser(true)
+
+        const token = localStorage.getItem('jwt')
+
+        if (!token) {
+            setCurrentUser(null)
+            setLoadingUser(false)
+            return
         }
+
+        try {
+            const res = await api.get('/users/self')
+            setCurrentUser(res.data)
+        } catch (error) {
+            console.log("Failed to fetch user")
+            setToken(null)
+            setCurrentUser(null)
+        }
+
+        setLoadingUser(false)
     }
 
     // Direct
@@ -103,8 +115,8 @@ export const AuthProvider = (props: any) => {
     }
 
     return (
-        <AuthContext.Provider value={{currentUser, login, registerAndLogin, logout}} >
-            {props.children}
+        <AuthContext.Provider value={{currentUser, loadingUser, login, registerAndLogin, logout}} >
+            {!loadingUser && props.children}
         </AuthContext.Provider>
     )
 }

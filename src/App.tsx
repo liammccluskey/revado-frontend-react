@@ -4,6 +4,8 @@ import { AuthProvider } from './providers/AuthProvider'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
 import { Home } from './pages/Home'
+import { TodoProvider } from './providers/TodoProvider'
+import { PrivateRoute } from './containers/PrivateRoute'
 
 const router = createBrowserRouter([
    {
@@ -24,14 +26,16 @@ const router = createBrowserRouter([
   },
   {
     path: '/home',
-    element: <Home />
+    element: <PrivateRoute><Home/></PrivateRoute>
   },
 ])
 
 function App() {
   return (
     <AuthProvider>
-      <RouterProvider router={router} />
+      <TodoProvider>
+        <RouterProvider router={router} />
+      </TodoProvider>
     </AuthProvider>
   )
 }
