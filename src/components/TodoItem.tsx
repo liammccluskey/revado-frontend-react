@@ -16,6 +16,7 @@ export const TodoItem = (props: Props) => {
     const [isAddingSubtask, setIsAddingSubtask] = useState<boolean>(false)
     const [editingSubtaskId, setEditingSubtaskId] = useState<number | null>(null)
     const [subtaskDescription, setSubtaskDescription] = useState('')
+    const [editingSubtaskDescription, setEditingSubtaskDescription] = useState('')
 
     useEffect(() => {
         if (isEditingTodo) {
@@ -28,7 +29,7 @@ export const TodoItem = (props: Props) => {
         if (editingSubtaskId != null) {
             const subtask = props.todo.subtasks.find(s => s.id == editingSubtaskId)
             if (subtask) {
-                setSubtaskDescription(subtask.description)
+                setEditingSubtaskDescription(subtask.description)
             }
         }
     }, [editingSubtaskId])
@@ -61,6 +62,7 @@ export const TodoItem = (props: Props) => {
     const onClickSaveSubtask = async () => {
         await postSubtask({description: subtaskDescription, completed: false}, props.todo.id)
         setIsAddingSubtask(false)
+        setEditingSubtaskId(null)
     }
 
     const onClickEditSubtask = (subtaskId: number) => {
@@ -72,7 +74,7 @@ export const TodoItem = (props: Props) => {
     }
 
     const onClickSaveSubtaskEdits = async () => {
-        await patchSubtask({description: subtaskDescription}, editingSubtaskId!)
+        await patchSubtask({description: editingSubtaskDescription}, editingSubtaskId!)
         setEditingSubtaskId(null)
     }
 
@@ -85,7 +87,7 @@ export const TodoItem = (props: Props) => {
     }
 
     return (
-        <Root>
+        <Root key={props.todo.id}>
             <div className='header-container'>
                 <div className='header-left-container'>
                     <input 
@@ -118,6 +120,58 @@ export const TodoItem = (props: Props) => {
                         rows={3}
                     ></textarea>
                     : <p>{props.todo.description}</p>
+                }
+                {isAddingSubtask ? 
+                    <div className='float-container add-subtask-container' style={{margin: '10px 0px'}}>
+                        <h4 style={{marginBottom: 10}}>Add subtask</h4>
+                        <label>Description</label>
+                        <input 
+                            type='text' 
+                            value={subtaskDescription} 
+                            onChange={e => setSubtaskDescription(e.target.value)}
+                        />
+                        <div className='footer' style={{alignSelf: 'flex-end', marginTop: 10}}>
+                            <button style={{marginRight: 10}} onClick={onClickCancelCreateSubtask}>Cancel</button>
+                            <button onClick={onClickSaveSubtask}>Save</button>
+                        </div>
+                    </div>
+                    : null
+                }
+                {props.todo.subtasks.length ? 
+                    <div className='float-container subtasks-container'>
+                        {props.todo.subtasks.map(subtask => (
+                            <div className='subtask-container' key={subtask.id}>
+                                <div className='subtask-left-container'>
+                                    <input
+                                        type='checkbox'
+                                        checked={subtask.completed}
+                                        onChange={e => onChangeSubtaskCompleted(e, subtask.id)}
+                                        style={{marginRight: 10}}
+                                    />
+                                    {subtask.id == editingSubtaskId ?
+                                        <input 
+                                            type='text' 
+                                            value={editingSubtaskDescription}
+                                            onChange={e => setEditingSubtaskDescription(e.target.value)}
+                                            style={{flex: 1, marginRight: 10}}
+                                        />
+                                        : <p>{subtask.description}</p>
+                                    }
+                                </div>
+                                {subtask.id == editingSubtaskId ?
+                                    <div className='subtask-buttons-container'>
+                                        <button onClick={onClickCancelEditSubtask}>Cancel</button>
+                                        <button onClick={onClickSaveSubtaskEdits}>Save</button>
+                                    </div>
+                                    : <div className='subtask-buttons-container'>
+                                        <button onClick={() => onClickEditSubtask(subtask.id)}>Edit</button>
+                                        <button onClick={() => onClickDeleteSubtask(subtask.id)}>Delete</button>
+                                    </div>
+                                }
+                            </div>
+                        ))}
+                    </div>
+                    : null
                 }
         </Root>
     )
@@ -152,4 +206,40 @@ const Root = styled.div`
     & .header-right-container button {
         margin-right: 10px;
     }
-`
+
+    & .add-subtask-container {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 15px;
+    }
+
+    & .subtasks-container {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        margin-top: 10px;
+    }
+
+    & .subtask-container {
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    & .subtask-container:last-child {
+        border-bottom: none;
+    }
+
+    & .subtask-left-container {
+        display: flex;
+        align-items: center;
+        flex: 1;
+    }
+
+    & .subtask-buttons-container button:first-child {
+        margin-right: 10px;
+    }
+`   

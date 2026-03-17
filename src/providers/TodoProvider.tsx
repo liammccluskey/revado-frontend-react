@@ -129,7 +129,7 @@ export const TodoProvider = (props: any) => {
 
     const patchSubtask = async (subtaskRequest: Partial<SubtaskRequest>, subtaskId: number) => {
         try {
-            const res = await api.post(`/subtasks/${subtaskId}`, subtaskRequest)
+            const res = await api.patch(`/subtasks/${subtaskId}`, subtaskRequest)
             const todo = res.data
             setTodos(curr => curr.map(t => t.id == todo.id ? todo : t))
         } catch (e) {
